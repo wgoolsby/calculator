@@ -32,6 +32,7 @@ body {
     box-sizing: border-box;
     font-family: 'IBM Plex Sans', sans-serif;
     width: 25%;
+    height: 100%;
     font-size: 2em;
     font-weight: bold;
     border: 1px solid #3a3a3a;
