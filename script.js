@@ -30,7 +30,7 @@ const operate = () => {
     // Figure out the type of operation we're doing and call that function
     const { firstValue, currentResult, operator } = calculator;
 
-    const existingValue = parseInt(currentResult);
+    const existingValue = parseFloat(currentResult);
 
     switch (operator) {
         case '+':
