@@ -16,42 +16,32 @@ const divide = (a, b) => a / b;
 const updateDisplay = () => {
     const resultScreen = document.getElementById('result');
     resultScreen.textContent = calculator.currentResult;
+    //todo update this to handle active state buttons
 };
 
 const clear = () => {
     (calculator.firstValue = null),
         (calculator.waitingForSecondValue = true),
         (calculator.operator = null),
-        (calculator.currentResult = '0'),
-        updateDisplay();
+        (calculator.currentResult = '0');
 };
 
-const operate = (digit1, digit2, op) => {
+const operate = () => {
     // Figure out the type of operation we're doing and call that function
-    console.log(digit1, digit2, op);
+    const { firstValue, currentResult, operator } = calculator;
 
-    switch (op) {
+    const existingValue = parseInt(currentResult);
+
+    switch (operator) {
         case '+':
-            console.log('addition');
-            calculator.currentResult = add(digit1, digit2);
-            break;
+            return add(firstValue, existingValue);
         case '-':
-            console.log('subtraction');
-            calculator.currentResult = subtract(digit1, digit2);
-            break;
+            return subtract(firstValue, existingValue);
         case '*':
-            console.log('multiplication');
-            calculator.currentResult = multiply(digit1, digit2);
-            break;
+            return multiply(firstValue, existingValue);
         case '/':
-            console.log('division');
-            calculator.currentResult = divide(digit1, digit2);
-            break;
+            return divide(firstValue, existingValue);
     }
-    updateDisplay(calculator.currentResult);
-    calculator.firstValue = calculator.currentResult;
-    calculator.secondValue = null;
-    calculator.operator = null;
 };
 
 const getDigit = (digit) => {
@@ -63,10 +53,11 @@ const getDigit = (digit) => {
         calculator.currentResult =
             currentResult === '0' ? digit : currentResult + digit;
     }
-    console.log(calculator);
 };
 
 const inputDecimal = (dot) => {
+    if (calculator.waitingForSecondValue === true) return;
+
     // If the `currentResult` does not contain a decimal point
     if (!calculator.currentResult.includes(dot)) {
         // Append the decimal point
@@ -74,17 +65,25 @@ const inputDecimal = (dot) => {
     }
 };
 
-const getOperator = (nextOperator) => {
+const handleOperator = (nextOperator) => {
     const { firstValue, currentResult, operator } = calculator;
     const inputValue = parseFloat(currentResult);
 
+    if (operator && calculator.waitingForSecondValue) {
+        calculator.operator = nextOperator;
+        return;
+    }
+
     if (firstValue === null) {
         calculator.firstValue = inputValue;
+    } else if (operator) {
+        calculator.firstValue = operate();
+        calculator.currentResult = String(calculator.firstValue);
+        updateDisplay();
     }
 
     calculator.waitingForSecondValue = true;
     calculator.operator = nextOperator;
-    console.log(calculator);
 };
 
 // Grab a nodelist from all of the number buttons.
@@ -107,21 +106,19 @@ decimalButton.addEventListener('click', (e) => {
 const operators = document.querySelectorAll('.operator-btn');
 operators.forEach((operator) =>
     operator.addEventListener('click', (e) => {
-        getOperator(e.target.dataset.key);
+        handleOperator(e.target.dataset.key);
         updateDisplay();
     })
 );
-
+// This seems bad.
 const equalsButton = document.querySelector('.equals-btn');
 equalsButton.addEventListener('click', () => {
-    operate(
-        parseFloat(calculator.firstValue),
-        parseFloat(calculator.currentResult),
-        calculator.operator
-    );
+    handleOperator();
+    updateDisplay();
 });
 
 const clearButton = document.querySelector('.clear-btn');
 clearButton.addEventListener('click', () => {
     clear();
+    updateDisplay();
 });
